@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orion Capital
 
-## Getting Started
+Financial management app replacing the legacy Excel workflow. Tracks capital sources (inversionistas + bancos), destinations (inversiones, créditos, préstamos), the funding waterfall, and the Reserva fund.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Next.js 14 App Router · TypeScript · Tailwind + shadcn/ui · Supabase (Postgres 17 + Auth + Storage + RLS) · Recharts · @react-pdf/renderer. Spanish UI, `es-MX` locale, MXN-only currency, `America/Monterrey` timezone.
+
+## Prerequisites
+
+- Node 20.11+ (use `.nvmrc`)
+- pnpm 9 (`corepack enable pnpm && corepack prepare pnpm@9 --activate`)
+- Supabase CLI (installed as dev dep — run via `pnpm exec supabase ...`)
+
+## First-run setup
+
+1. `cp .env.example .env.local`, then paste the `service_role` JWT from Supabase dashboard → Project Settings → API into `SUPABASE_SERVICE_ROLE_KEY`.
+2. `pnpm install`
+3. `pnpm dev` — opens at <http://localhost:3000>.
+
+## Bootstrap the first admin
+
+The database default role for new signups is `debtor` (least-privileged). After signing up with your email via the Supabase dashboard (Auth → Add User) or by hitting `/login` once you build a signup page, promote yourself with this SQL in the Supabase SQL editor:
+
+```sql
+update public.profiles
+set role = 'admin'
+where email = 'hector.medina.rdz.123@gmail.com';
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sign out and sign back in — you will land at `/admin`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `pnpm dev` — Next dev server
+- `pnpm build` — production build
+- `pnpm lint` — eslint
+- `pnpm exec supabase db diff --linked` — diff local migrations vs cloud (run `pnpm exec supabase link --project-ref gtncjcbjwmybcvgoivbd` once to set up)
+- Regenerate DB types: `pnpm exec supabase gen types typescript --project-id gtncjcbjwmybcvgoivbd > types/database.ts`
 
-## Learn More
+## Project layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+web/
+├── app/                   Next.js App Router routes
+│   ├── (auth)/            /login, centered-card layout
+│   ├── (admin)/admin/*    Admin routes (sidebar shell)
+│   ├── (investor)/        Investor portal (Sprint 7)
+│   ├── (debtor)/          Debtor portal (Sprint 7)
+│   └── auth/callback      OAuth / magic-link exchange
+├── components/
+│   ├── ui/                shadcn primitives
+│   ├── admin/             sidebar + top-nav + user-menu
+│   └── auth/              login-form
+├── lib/
+│   ├── supabase/          client / server / middleware / admin
+│   ├── auth.ts            requireRole helper
+│   ├── money.ts           formatMXN / parseMXN
+│   ├── dates.ts           America/Monterrey helpers
+│   └── validators.ts      RFC + CLABE
+├── middleware.ts          auth refresh + role-based routing
+├── supabase/
+│   ├── config.toml
+│   └── migrations/        0001_enums.sql … 0010_rls_policies.sql
+└── types/                 database.ts (generated), domain.ts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Sprint 1 status
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Full schema laid down: 17 tables, 13 enums, 21 RLS policies, generic audit trigger wired to 3 high-value tables.
+- Role-based auth flow (login → middleware → role home).
+- Admin shell with placeholder pages for every route in the spec.
+- No CRUD, no charts, no cron, no PDFs — those land in Sprints 2–10.
