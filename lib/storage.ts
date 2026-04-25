@@ -70,6 +70,66 @@ export async function uploadProof(
   return { ok: true, proofFileId: row.id, storagePath: path }
 }
 
+export type PendingProofUploadResult =
+  | {
+      ok: true
+      storagePath: string
+      fileName: string
+      mimeType: string
+      sizeBytes: number
+    }
+  | { ok: false; error: string }
+
+/**
+ * Debtor-side proof upload. Lands at proof-files/pending_payments/{uid}/...
+ * — the storage policy from migration 0010 lets the debtor write & read that
+ * folder. We don't create a proof_files row at submission time; that happens
+ * inside `approve_pending_payment` so rejected uploads stay out of the
+ * canonical proof_files table.
+ */
+export async function uploadPendingPaymentProof(
+  file: File,
+): Promise<PendingProofUploadResult> {
+  if (!file || file.size === 0) return { ok: false, error: "Archivo vacío" }
+  if (file.size > PROOF_MAX_BYTES)
+    return { ok: false, error: "Archivo excede 10 MB" }
+  if (!PROOF_MIMES.includes(file.type))
+    return { ok: false, error: `Tipo no permitido: ${file.type}` }
+
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: "No autenticado" }
+
+  const ts = Date.now()
+  const path = `pending_payments/${user.id}/${ts}_${sanitizeName(file.name)}`
+  const bytes = Buffer.from(await file.arrayBuffer())
+
+  const { error: upErr } = await supabase.storage
+    .from(PROOF_BUCKET)
+    .upload(path, bytes, {
+      contentType: file.type,
+      upsert: false,
+    })
+  if (upErr) return { ok: false, error: upErr.message }
+
+  return {
+    ok: true,
+    storagePath: path,
+    fileName: file.name,
+    mimeType: file.type,
+    sizeBytes: file.size,
+  }
+}
+
+/** Remove a storage object by path. Used when admin rejects a pending payment. */
+export async function removeStorageObject(storagePath: string): Promise<void> {
+  if (!storagePath) return
+  const supabase = createClient()
+  await supabase.storage.from(PROOF_BUCKET).remove([storagePath])
+}
+
 export async function signProofUrl(
   storagePath: string,
   seconds = 60,

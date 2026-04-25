@@ -417,6 +417,69 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_payments: {
+        Row: {
+          id: string
+          destination_type: Database["public"]["Enums"]["destination_type"]
+          destination_id: string
+          monto_total: number
+          fecha_pago: string
+          notas: string | null
+          proof_storage_path: string
+          proof_file_name: string | null
+          proof_mime_type: string | null
+          proof_size_bytes: number | null
+          estado: Database["public"]["Enums"]["pending_payment_estado"]
+          submitted_by: string
+          submitted_at: string
+          reviewed_by: string | null
+          reviewed_at: string | null
+          rejection_reason: string | null
+          approved_payment_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          destination_type: Database["public"]["Enums"]["destination_type"]
+          destination_id: string
+          monto_total: number
+          fecha_pago: string
+          notas?: string | null
+          proof_storage_path: string
+          proof_file_name?: string | null
+          proof_mime_type?: string | null
+          proof_size_bytes?: number | null
+          estado?: Database["public"]["Enums"]["pending_payment_estado"]
+          submitted_by: string
+          submitted_at?: string
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          rejection_reason?: string | null
+          approved_payment_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          destination_type?: Database["public"]["Enums"]["destination_type"]
+          destination_id?: string
+          monto_total?: number
+          fecha_pago?: string
+          notas?: string | null
+          proof_storage_path?: string
+          proof_file_name?: string | null
+          proof_mime_type?: string | null
+          proof_size_bytes?: number | null
+          estado?: Database["public"]["Enums"]["pending_payment_estado"]
+          submitted_by?: string
+          submitted_at?: string
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          rejection_reason?: string | null
+          approved_payment_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       payment_distributions: {
         Row: {
           id: string
@@ -702,6 +765,14 @@ export type Database = {
         Args: never
         Returns: { schedule_marked: number; destinations_flipped: number }[]
       }
+      approve_pending_payment: {
+        Args: { p_pending_id: string }
+        Returns: string
+      }
+      reject_pending_payment: {
+        Args: { p_pending_id: string; p_reason: string }
+        Returns: string
+      }
       investor_funded_destination: {
         Args: {
           p_destination_id: string
@@ -738,6 +809,7 @@ export type Database = {
       estado_inversion: "activo" | "exitado" | "cancelado"
       estado_tranche: "activo" | "vencido" | "reembolsado"
       inversion_movimiento_tipo: "ingreso" | "gasto"
+      pending_payment_estado: "pending" | "approved" | "rejected"
       recipient_type: "bank" | "investor_tranche" | "orion" | "reserva"
       reserva_tipo:
         | "aporte_auto"

@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import {
@@ -8,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { buttonVariants } from "@/components/ui/button"
 import { formatMXN } from "@/lib/money"
 import { formatDate } from "@/lib/dates"
 
@@ -83,11 +85,27 @@ export default async function DeudorHome() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-semibold">Mis créditos</h1>
-        <p className="text-muted-foreground text-sm">
-          Resumen de tus obligaciones con Orion Capital.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Mis créditos</h1>
+          <p className="text-muted-foreground text-sm">
+            Resumen de tus obligaciones con Orion Capital.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href="/deudor/historial"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Historial
+          </Link>
+          <Link
+            href="/deudor/pagar"
+            className={buttonVariants({ size: "sm" })}
+          >
+            Subir comprobante
+          </Link>
+        </div>
       </div>
 
       {vencidas.length > 0 && (

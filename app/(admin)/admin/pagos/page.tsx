@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { PaymentForm } from "@/components/admin/payment-form"
 import { DeleteButton } from "@/components/admin/delete-button"
@@ -11,6 +12,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Separator } from "@/components/ui/separator"
+import { buttonVariants } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { formatMXN } from "@/lib/money"
 import { formatDate } from "@/lib/dates"
 import { createPayment, deletePayment } from "./actions"
@@ -41,14 +44,32 @@ export default async function PagosPage() {
     (prestamos ?? []).map((p) => [p.id, p.nombre_persona]),
   )
 
+  const { count: pendingCount } = await supabase
+    .from("pending_payments")
+    .select("*", { count: "exact", head: true })
+    .eq("estado", "pending")
+
   return (
     <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-semibold">Pagos</h1>
-        <p className="text-muted-foreground text-sm">
-          Registro de pagos recibidos. La distribución usa cascada
-          mora→interés→capital sobre las cuotas pendientes.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Pagos</h1>
+          <p className="text-muted-foreground text-sm">
+            Registro de pagos recibidos. La distribución usa cascada
+            mora→interés→capital sobre las cuotas pendientes.
+          </p>
+        </div>
+        <Link
+          href="/admin/pagos/pendientes"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Pendientes de aprobación
+          {(pendingCount ?? 0) > 0 && (
+            <Badge variant="destructive" className="ml-2">
+              {pendingCount}
+            </Badge>
+          )}
+        </Link>
       </div>
 
       <section className="space-y-3">
