@@ -59,17 +59,25 @@ export default async function PagosPage() {
             mora→interés→capital sobre las cuotas pendientes.
           </p>
         </div>
-        <Link
-          href="/admin/pagos/pendientes"
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          Pendientes de aprobación
-          {(pendingCount ?? 0) > 0 && (
-            <Badge variant="destructive" className="ml-2">
-              {pendingCount}
-            </Badge>
-          )}
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/export?entity=pagos"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Exportar Excel
+          </a>
+          <Link
+            href="/admin/pagos/pendientes"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Pendientes de aprobación
+            {(pendingCount ?? 0) > 0 && (
+              <Badge variant="destructive" className="ml-2">
+                {pendingCount}
+              </Badge>
+            )}
+          </Link>
+        </div>
       </div>
 
       <section className="space-y-3">

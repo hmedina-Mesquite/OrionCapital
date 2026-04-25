@@ -13,6 +13,7 @@ import {
   Shield,
   FileBarChart,
   Settings,
+  History,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/admin/pagos", label: "Pagos", icon: Receipt },
   { href: "/admin/reserva", label: "Reserva", icon: Shield },
   { href: "/admin/reportes", label: "Reportes", icon: FileBarChart },
+  { href: "/admin/audit", label: "Auditoría", icon: History },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ] as const
 

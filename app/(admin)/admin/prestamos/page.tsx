@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -32,7 +32,15 @@ export default async function PrestamosPage() {
             Préstamos personales otorgados a individuos.
           </p>
         </div>
-        <Button render={<Link href="/admin/prestamos/new">Nuevo</Link>} />
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/export?entity=prestamos"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Exportar Excel
+          </a>
+          <Button render={<Link href="/admin/prestamos/new">Nuevo</Link>} />
+        </div>
       </div>
 
       <div className="rounded-lg border">

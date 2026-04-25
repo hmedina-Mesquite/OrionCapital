@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -48,7 +48,15 @@ export default async function InversionesPage() {
             Ventures en los que Orion despliega capital propio.
           </p>
         </div>
-        <Button render={<Link href="/admin/inversiones/new">Nueva</Link>} />
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/export?entity=inversiones"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Exportar Excel
+          </a>
+          <Button render={<Link href="/admin/inversiones/new">Nueva</Link>} />
+        </div>
       </div>
 
       <div className="rounded-lg border">
