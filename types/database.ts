@@ -12,6 +12,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_google_tokens: {
+        Row: {
+          access_token: string
+          admin_id: string
+          created_at: string
+          expires_at: string
+          google_email: string | null
+          refresh_token: string | null
+          scope: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          admin_id: string
+          created_at?: string
+          expires_at: string
+          google_email?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          admin_id?: string
+          created_at?: string
+          expires_at?: string
+          google_email?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_google_tokens_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       amortization_schedule: {
         Row: {
           capital_esperado: number
