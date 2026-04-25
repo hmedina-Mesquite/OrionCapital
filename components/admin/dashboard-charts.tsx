@@ -107,6 +107,40 @@ export function SourceMixChart({
   )
 }
 
+export function CashFlow30Chart({
+  data,
+}: {
+  data: { date: string; inflow: number; outflow: number }[]
+}) {
+  return (
+    <div className="rounded-lg border p-4">
+      <h3 className="text-sm font-medium mb-3">Flujo de caja proyectado · 30 días</h3>
+      <p className="text-xs text-muted-foreground mb-3">
+        Inflow = cuotas con vencimiento en el rango. Outflow = interés mensual
+        estimado de inversionistas + costo bancario sobre disposiciones.
+      </p>
+      <div className="h-64 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <XAxis dataKey="date" stroke="currentColor" fontSize={10} />
+            <YAxis
+              stroke="currentColor"
+              fontSize={11}
+              tickFormatter={(v) =>
+                Number(v).toLocaleString("es-MX", { notation: "compact" })
+              }
+            />
+            <Tooltip formatter={(v) => formatMXN(Number(v))} />
+            <Legend />
+            <Bar dataKey="inflow" fill={PIE_COLORS[1]} name="Entrada" />
+            <Bar dataKey="outflow" fill={PIE_COLORS[4]} name="Salida" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
 export function ScheduleStatusChart({
   data,
 }: {
