@@ -698,6 +698,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       is_admin: { Args: never; Returns: boolean }
+      mark_past_due: {
+        Args: never
+        Returns: { schedule_marked: number; destinations_flipped: number }[]
+      }
       investor_funded_destination: {
         Args: {
           p_destination_id: string

@@ -181,50 +181,14 @@ export async function deleteFunding(
   revalidatePath(path)
 }
 
-/** Sweep job. Marks every overdue cuota as `vencida`, then flips the parent
- *  credito/prestamo estado to `en_mora` if it has any vencida row. Idempotent. */
+/** Sweep job. Marks every overdue cuota as `vencida` and flips the parent
+ *  credito/prestamo estado to `en_mora` if it has any vencida row. Idempotent.
+ *  Implementation lives in the `mark_past_due` Postgres function (see migration
+ *  0018) so pg_cron and the manual admin button share one code path. */
 export async function markPastDue(): Promise<{ ok: true; count: number }> {
   const supabase = createClient()
-  const today = new Date().toISOString().slice(0, 10)
-
-  const { data: marked } = await supabase
-    .from("amortization_schedule")
-    .update({ estado: "vencida" })
-    .lt("fecha_vencimiento", today)
-    .eq("estado", "pendiente")
-    .select("destination_type, destination_id")
-
-  // Collect distinct (type, id) pairs that now have at least one vencida row.
-  // (Some rows may already have been vencida from a prior sweep; we still want
-  // to force-flip the parent estado in case it was reverted.)
-  const { data: stillVencida } = await supabase
-    .from("amortization_schedule")
-    .select("destination_type, destination_id")
-    .eq("estado", "vencida")
-  const pairs = new Map<string, { type: "credito" | "prestamo"; id: string }>()
-  for (const r of stillVencida ?? []) {
-    if (r.destination_type === "credito" || r.destination_type === "prestamo") {
-      pairs.set(`${r.destination_type}:${r.destination_id}`, {
-        type: r.destination_type,
-        id: r.destination_id,
-      })
-    }
-  }
-  for (const { type, id } of Array.from(pairs.values())) {
-    if (type === "credito") {
-      await supabase
-        .from("creditos")
-        .update({ estado: "en_mora" })
-        .eq("id", id)
-        .in("estado", ["activo", "pre_aprobado"])
-    } else {
-      await supabase
-        .from("prestamos")
-        .update({ estado: "en_mora" })
-        .eq("id", id)
-        .in("estado", ["activo", "pre_aprobado"])
-    }
-  }
-
-  return { ok: true, count: marked?.length ?? 0 }
+  const { data, error } = await supabase.rpc("mark_past_due")
+  if (error) return { ok: true, count: 0 }
+  const row = Array.isArray(data) ? data[0] : null
+  return { ok: true, count: row?.schedule_marked ?? 0 }
 }
