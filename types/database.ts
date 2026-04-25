@@ -698,6 +698,24 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       is_admin: { Args: never; Returns: boolean }
+      investor_funded_destination: {
+        Args: {
+          p_destination_id: string
+          p_destination_type: Database["public"]["Enums"]["destination_type"]
+        }
+        Returns: boolean
+      }
+      record_payment: {
+        Args: {
+          p_destination_id: string
+          p_destination_type: Database["public"]["Enums"]["destination_type"]
+          p_fecha_pago: string
+          p_monto_total: number
+          p_notas: string | null
+          p_proof_file_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       amortizacion_estado:

@@ -21,3 +21,8 @@ export function parseMXN(input: string): number | null {
   const n = Number(cleaned)
   return Number.isFinite(n) ? n : null
 }
+
+/** Round to 2 decimals (MXN cents). Used pervasively in amortization + payment math. */
+export function round2(n: number): number {
+  return Math.round(n * 100) / 100
+}

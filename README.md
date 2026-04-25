@@ -65,9 +65,29 @@ web/
 └── types/                 database.ts (generated), domain.ts
 ```
 
-## Sprint 1 status
+## Sprint status
 
-- Full schema laid down: 17 tables, 13 enums, 21 RLS policies, generic audit trigger wired to 3 high-value tables.
-- Role-based auth flow (login → middleware → role home).
-- Admin shell with placeholder pages for every route in the spec.
-- No CRUD, no charts, no cron, no PDFs — those land in Sprints 2–10.
+- **Sprint 1** — Schema (17 tables, 13 enums, RLS, generic audit), auth + role routing, admin shell, storage bucket.
+- **Sprint 2** — Inversionistas + Bancos CRUD with proof uploads + tranches/disposiciones sub-tables. Migrations `0011`–`0012`.
+- **Sprint 3** — Inversiones + Créditos + Préstamos CRUD, audit triggers extended, polymorphic FK validation trigger on `fundings`. Migration `0013`.
+- **Sprint 4** — French amortization generator, `regenerateSchedule` action, schedule view on credito/prestamo, payments page with mora→interés→capital cascade. Migration `0014`.
+- **Sprint 5** — Reserva movements, Settings editor, KPI dashboard.
+- **Sprint 6** — Investor + Debtor portals; Reportes (concentración + aging).
+- **Sprint 7** — Recharts dashboard charts (cobranza, fuente mix, status).
+- **Sprint 8** — Fundings UI on every destination + manual mora marker on Reportes.
+- **Sprint 9** — Investor PDF statement at `/inversionista/statement`.
+- **Sprint 10** — Payment-distribution waterfall: pro-rata to investor/bank fundings, reserva auto-aporte (per `settings.reserva_percentage`), orion residual.
+
+### Applying new migrations
+
+After pulling, push migrations to the linked Supabase project:
+
+```bash
+pnpm exec supabase db push
+```
+
+Then regenerate DB types so TS picks up new triggers/columns:
+
+```bash
+pnpm exec supabase gen types typescript --project-id gtncjcbjwmybcvgoivbd > types/database.ts
+```
