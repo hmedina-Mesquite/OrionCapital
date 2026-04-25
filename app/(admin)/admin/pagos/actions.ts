@@ -83,6 +83,49 @@ export async function createPayment(
   return { ok: true, id: paymentId as string }
 }
 
+/**
+ * Override a single payment_distribution row's monto. Sets manual_override=true
+ * and stores the override_reason for the audit log. Does NOT auto-rebalance
+ * the rest of the distribution rows — admin's responsibility to keep totals
+ * consistent. The page UI shows the running totals so the admin can verify.
+ */
+export async function updateDistribution(
+  distributionId: string,
+  newMonto: number,
+  reason: string,
+): Promise<ActionResult> {
+  if (!Number.isFinite(newMonto) || newMonto < 0) {
+    return { ok: false, error: "Monto inválido" }
+  }
+  const trimmed = reason.trim()
+  if (trimmed.length < 5) {
+    return { ok: false, error: "Motivo del override (mínimo 5 caracteres)" }
+  }
+  const supabase = createClient()
+  const { data: existing, error: existingErr } = await supabase
+    .from("payment_distributions")
+    .select("id, payment_id")
+    .eq("id", distributionId)
+    .single()
+  if (existingErr || !existing) {
+    return { ok: false, error: existingErr?.message ?? "No se encontró la distribución" }
+  }
+
+  const { error } = await supabase
+    .from("payment_distributions")
+    .update({
+      monto: newMonto,
+      manual_override: true,
+      override_reason: trimmed,
+    })
+    .eq("id", distributionId)
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath("/admin/pagos")
+  revalidatePath(`/admin/pagos/${existing.payment_id}`)
+  return { ok: true }
+}
+
 export async function deletePayment(id: string): Promise<void> {
   const supabase = createClient()
   const { data: payment } = await supabase

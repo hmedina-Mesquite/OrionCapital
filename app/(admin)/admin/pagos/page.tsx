@@ -146,11 +146,19 @@ export default async function PagosPage() {
                       <ProofLink proofFileId={p.proof_file_id} />
                     </TableCell>
                     <TableCell className="text-right">
-                      <DeleteButton
-                        action={deleteBound}
-                        title="¿Eliminar pago?"
-                        description="No revierte el estado de las cuotas pagadas; ajusta manualmente si es necesario."
-                      />
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/pagos/${p.id}`}
+                          className={buttonVariants({ variant: "outline", size: "sm" })}
+                        >
+                          Ver
+                        </Link>
+                        <DeleteButton
+                          action={deleteBound}
+                          title="¿Eliminar pago?"
+                          description="No revierte el estado de las cuotas pagadas; ajusta manualmente si es necesario."
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 )
