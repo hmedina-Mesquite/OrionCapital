@@ -125,6 +125,7 @@ export type Database = {
           estado: Database["public"]["Enums"]["estado_bank"]
           fecha_apertura: string | null
           id: string
+          legacy_code: string | null
           linea_credito: number
           nombre: string
           numero_cuenta: string | null
@@ -135,6 +136,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          legacy_code?: string | null
           comision_apertura?: number
           contrato_file_id?: string | null
           created_at?: string
@@ -181,6 +183,7 @@ export type Database = {
           fecha_inicio: string
           google_drive_folder_url: string | null
           id: string
+          legacy_code: string | null
           nombre_proyecto: string
           plazo_meses: number
           presupuesto: number
@@ -191,6 +194,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          legacy_code?: string | null
           contacto_email?: string | null
           contacto_nombre?: string | null
           contacto_telefono?: string | null
@@ -573,6 +577,7 @@ export type Database = {
           fecha_inicio: string
           google_drive_folder_url: string | null
           id: string
+          legacy_code: string | null
           nombre_persona: string
           plazo_meses: number
           profile_id: string | null
@@ -583,6 +588,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          legacy_code?: string | null
           cantidad: number
           contrato_file_id?: string | null
           created_at?: string

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "import-legacy": "tsx scripts/import-legacy-xlsx.ts",
+    "inspect-legacy": "tsx scripts/inspect-xlsx.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -36,11 +38,14 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^17.4.2",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",
     "supabase": "^2.95.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "xlsx": "^0.18.5"
   }
 }
