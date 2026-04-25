@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/auth"
 import { UserMenu } from "@/components/admin/user-menu"
+import { DebtorPortalNav } from "@/components/debtor/portal-nav"
 
 export default async function DebtorLayout({
   children,
@@ -13,6 +14,7 @@ export default async function DebtorLayout({
         <span className="font-semibold">Orion Capital · Deudor</span>
         <UserMenu profile={profile} />
       </header>
+      <DebtorPortalNav />
       <main className="flex-1 p-6">{children}</main>
     </div>
   )
