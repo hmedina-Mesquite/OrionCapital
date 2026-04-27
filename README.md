@@ -25,7 +25,7 @@ The database default role for new signups is `debtor` (least-privileged). After 
 ```sql
 update public.profiles
 set role = 'admin'
-where email = 'hector.medina.rdz.123@gmail.com';
+where email = 'hmedina@mesquite.mx';
 ```
 
 Sign out and sign back in — you will land at `/admin`.
