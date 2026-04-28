@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatMXN } from "@/lib/money"
 import { formatDate } from "@/lib/dates"
 import {
@@ -168,6 +169,29 @@ export default async function InversionDetailPage({
           </Table>
         </div>
       </section>
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Reporte PDF</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Descarga un PDF con el resumen de presupuesto, ingresos, gastos,
+            fuentes de financiamiento y la lista completa de movimientos. Útil
+            para enviar al cliente o para reconciliación contable.
+          </p>
+          <a
+            href={`/admin/inversiones/${params.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-9 items-center rounded-lg border border-border bg-foreground px-4 text-sm font-medium text-background hover:opacity-90"
+          >
+            Descargar PDF
+          </a>
+        </CardContent>
+      </Card>
     </div>
   )
 }
