@@ -7,6 +7,7 @@ import { ProofLink } from "@/components/admin/proof-link"
 import { ScheduleSection } from "@/components/admin/schedule-section"
 import { FundingsSection } from "@/components/admin/fundings-section"
 import { Separator } from "@/components/ui/separator"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatMXN } from "@/lib/money"
 import { updateCredito, deleteCredito } from "../actions"
 import { regenerateSchedule } from "../../_lib/schedule-actions"
@@ -93,6 +94,30 @@ export default async function CreditoDetailPage({
       <Separator />
 
       <ScheduleSection rows={schedule ?? []} generate={generateBound} />
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Estado de cuenta · Reporte</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Descarga un PDF con el resumen ejecutivo del crédito: monto
+            contratado, saldo, cuotas vencidas, fuentes de financiamiento,
+            historial de pagos y cronograma completo. Listo para enviar al
+            cliente.
+          </p>
+          <a
+            href={`/admin/creditos/${params.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-9 items-center rounded-lg border border-border bg-foreground px-4 text-sm font-medium text-background hover:opacity-90"
+          >
+            Descargar estado de cuenta
+          </a>
+        </CardContent>
+      </Card>
     </div>
   )
 }
