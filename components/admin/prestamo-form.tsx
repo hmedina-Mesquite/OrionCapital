@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import type { ActionResult } from "@/app/(admin)/admin/prestamos/actions"
 
 export type PrestamoFormDefaults = {
+  tipo?: "personal" | "negocio" | null
   nombre_persona?: string | null
   cantidad?: number | string | null
   tasa_anual?: number | string | null
@@ -51,7 +52,40 @@ export function PrestamoForm({
   return (
     <form action={formAction} className="space-y-4 max-w-xl" encType="multipart/form-data">
       <div className="grid gap-2">
-        <Label htmlFor="nombre_persona">Nombre de la persona *</Label>
+        <Label>Tipo de préstamo *</Label>
+        <div
+          role="radiogroup"
+          aria-label="Tipo de préstamo"
+          className="inline-flex rounded-lg border border-border bg-background p-0.5"
+        >
+          {(
+            [
+              { value: "personal", label: "Personal" },
+              { value: "negocio", label: "Negocio" },
+            ] as const
+          ).map((opt) => (
+            <label
+              key={opt.value}
+              className="relative cursor-pointer select-none px-3 py-1 text-sm rounded-md has-[:checked]:bg-primary has-[:checked]:text-primary-foreground"
+            >
+              <input
+                type="radio"
+                name="tipo"
+                value={opt.value}
+                defaultChecked={
+                  (defaults?.tipo ?? "personal") === opt.value
+                }
+                className="sr-only"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="nombre_persona">
+          Nombre de la persona / empresa *
+        </Label>
         <Input
           id="nombre_persona"
           name="nombre_persona"

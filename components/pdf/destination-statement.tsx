@@ -48,8 +48,10 @@ const styles = StyleSheet.create({
   num: { width: 70, textAlign: "right" },
   numWide: { width: 80, textAlign: "right" },
   fecha: { width: 60 },
-  cuotaNum: { width: 30, textAlign: "right" },
-  estado: { width: 70 },
+  cuotaNum: { width: 28, textAlign: "right", paddingRight: 8 },
+  cronFecha: { width: 64, paddingRight: 6 },
+  cronNum: { width: 74, textAlign: "right", paddingRight: 6 },
+  estado: { width: 64, paddingLeft: 6 },
   desc: { flexGrow: 1 },
   tipo: { width: 60 },
   total: {
@@ -79,6 +81,7 @@ const styles = StyleSheet.create({
 
 export type DestinationStatementProps = {
   kind: "credito" | "prestamo"
+  prestamoTipo: "personal" | "negocio" | null
   legacyCode: string | null
   nombre: string
   rfc: string | null
@@ -138,8 +141,18 @@ const ESTADO_LABEL: Record<string, string> = {
 }
 
 export function DestinationStatement(props: DestinationStatementProps) {
-  const headerLabel = props.kind === "credito" ? "crédito" : "préstamo"
-  const debtorRowLabel = props.kind === "credito" ? "Empresa" : "Persona"
+  const headerLabel =
+    props.kind === "credito"
+      ? "crédito"
+      : props.prestamoTipo === "negocio"
+        ? "préstamo a negocio"
+        : "préstamo personal"
+  const debtorRowLabel =
+    props.kind === "credito"
+      ? "Empresa"
+      : props.prestamoTipo === "negocio"
+        ? "Empresa"
+        : "Persona"
   const totalFunding = props.fundings.reduce((s, f) => s + f.monto, 0)
   const totalCap = props.payments.reduce((s, p) => s + p.capital, 0)
   const totalInt = props.payments.reduce((s, p) => s + p.interes, 0)
@@ -160,6 +173,14 @@ export function DestinationStatement(props: DestinationStatementProps) {
             <Text style={styles.kvLabel}>{debtorRowLabel}</Text>
             <Text style={styles.kvValue}>{props.nombre}</Text>
           </View>
+          {props.kind === "prestamo" && props.prestamoTipo && (
+            <View style={styles.kvRow}>
+              <Text style={styles.kvLabel}>Tipo</Text>
+              <Text style={styles.kvValue}>
+                {props.prestamoTipo === "personal" ? "Personal" : "Negocio"}
+              </Text>
+            </View>
+          )}
           {props.rfc && (
             <View style={styles.kvRow}>
               <Text style={styles.kvLabel}>RFC</Text>
@@ -305,21 +326,21 @@ export function DestinationStatement(props: DestinationStatementProps) {
           <>
             <View style={[styles.row, styles.th]}>
               <Text style={styles.cuotaNum}>#</Text>
-              <Text style={styles.fecha}>Vence</Text>
-              <Text style={styles.num}>Capital</Text>
-              <Text style={styles.num}>Interés</Text>
-              <Text style={styles.num}>Cuota</Text>
-              <Text style={styles.num}>Saldo</Text>
+              <Text style={styles.cronFecha}>Vence</Text>
+              <Text style={styles.cronNum}>Capital</Text>
+              <Text style={styles.cronNum}>Interés</Text>
+              <Text style={styles.cronNum}>Cuota</Text>
+              <Text style={styles.cronNum}>Saldo</Text>
               <Text style={styles.estado}>Estado</Text>
             </View>
             {props.schedule.map((r) => (
               <View key={r.numero} style={styles.row}>
                 <Text style={styles.cuotaNum}>{r.numero}</Text>
-                <Text style={styles.fecha}>{r.fecha}</Text>
-                <Text style={styles.num}>{fmt(r.capital)}</Text>
-                <Text style={styles.num}>{fmt(r.interes)}</Text>
-                <Text style={styles.num}>{fmt(r.cuota)}</Text>
-                <Text style={styles.num}>{fmt(r.saldo)}</Text>
+                <Text style={styles.cronFecha}>{r.fecha}</Text>
+                <Text style={styles.cronNum}>{fmt(r.capital)}</Text>
+                <Text style={styles.cronNum}>{fmt(r.interes)}</Text>
+                <Text style={styles.cronNum}>{fmt(r.cuota)}</Text>
+                <Text style={styles.cronNum}>{fmt(r.saldo)}</Text>
                 <Text style={styles.estado}>
                   {ESTADO_LABEL[r.estado] ?? r.estado}
                 </Text>

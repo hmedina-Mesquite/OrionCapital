@@ -8,6 +8,7 @@ import { uploadProof, deleteProof } from "@/lib/storage"
 import { regenerateSchedule } from "@/app/(admin)/admin/_lib/schedule-actions"
 
 const prestamoSchema = z.object({
+  tipo: z.enum(["personal", "negocio"]).default("personal"),
   nombre_persona: z.string().min(1).max(200),
   cantidad: z.coerce.number().min(0),
   tasa_anual: z.coerce.number().min(0).max(1, "Tasa entre 0 y 1 (decimal)"),
@@ -58,6 +59,7 @@ function fdString(fd: FormData, key: string): string {
 
 function readPrestamo(fd: FormData) {
   return prestamoSchema.safeParse({
+    tipo: fdString(fd, "tipo") || "personal",
     nombre_persona: fdString(fd, "nombre_persona"),
     cantidad: fdString(fd, "cantidad"),
     tasa_anual: fdString(fd, "tasa_anual"),

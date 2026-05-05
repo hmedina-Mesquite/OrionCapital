@@ -52,7 +52,10 @@ export default async function PrestamoDetailPage({
     <div className="space-y-8 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{p.nombre_persona}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold">{p.nombre_persona}</h1>
+            <TipoBadge tipo={p.tipo} />
+          </div>
           <p className="text-muted-foreground text-sm">
             {formatMXN(p.cantidad)} · {(Number(p.tasa_anual) * 100).toFixed(2)}%
             · {p.plazo_meses} meses · {p.estado}
@@ -118,5 +121,28 @@ export default async function PrestamoDetailPage({
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+function TipoBadge({ tipo }: { tipo: "personal" | "negocio" }) {
+  const isPersonal = tipo === "personal"
+  return (
+    <span
+      className={
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium " +
+        (isPersonal
+          ? "border-sky-300 bg-sky-50 text-sky-700"
+          : "border-amber-300 bg-amber-50 text-amber-800")
+      }
+    >
+      <span
+        aria-hidden
+        className={
+          "inline-block h-1.5 w-1.5 rounded-full " +
+          (isPersonal ? "bg-sky-500" : "bg-amber-500")
+        }
+      />
+      {isPersonal ? "Personal" : "Negocio"}
+    </span>
   )
 }

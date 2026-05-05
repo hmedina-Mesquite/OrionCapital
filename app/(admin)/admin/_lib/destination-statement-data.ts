@@ -29,6 +29,7 @@ export async function loadDestinationStatement(
   let domicilio: string | null = null
   let legacyCode: string | null = null
   let contacto: DestinationStatementProps["contacto"] = null
+  let prestamoTipo: "personal" | "negocio" | null = null
 
   if (kind === "credito") {
     const { data: c } = await supabase
@@ -58,7 +59,7 @@ export async function loadDestinationStatement(
     const { data: p } = await supabase
       .from("prestamos")
       .select(
-        "legacy_code, nombre_persona, rfc, cantidad, tasa_anual, plazo_meses, fecha_inicio, estado, tasa_mora_multiplicador, domicilio_fiscal, email, telefono",
+        "legacy_code, nombre_persona, rfc, cantidad, tasa_anual, plazo_meses, fecha_inicio, estado, tasa_mora_multiplicador, domicilio_fiscal, email, telefono, tipo",
       )
       .eq("id", id)
       .single()
@@ -73,6 +74,7 @@ export async function loadDestinationStatement(
     estado = p.estado
     moraMult = Number(p.tasa_mora_multiplicador)
     domicilio = p.domicilio_fiscal
+    prestamoTipo = p.tipo
     contacto = {
       nombre: nombre,
       email: p.email,
@@ -109,6 +111,8 @@ export async function loadDestinationStatement(
   const saldoActual = Math.max(0, monto - totalCapPaid)
 
   // Aging — count of overdue cuotas + sum of their cuota_esperada.
+  // We trust the schedule.estado from the DB (set atomically by record_payment
+  // RPC and the nightly mark_past_due cron). Don't second-guess it here.
   const vencidas = (schedule ?? []).filter(
     (r) =>
       r.estado !== "pagada_total" &&
@@ -170,6 +174,7 @@ export async function loadDestinationStatement(
 
   return {
     kind,
+    prestamoTipo,
     legacyCode,
     nombre,
     rfc,

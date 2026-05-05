@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -156,7 +158,22 @@ export type Database = {
           monto?: number
           proof_file_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bank_disposiciones_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "banks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_disposiciones_proof_file_fk"
+            columns: ["proof_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       banks: {
         Row: {
@@ -177,13 +194,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          legacy_code?: string | null
           comision_apertura?: number
           contrato_file_id?: string | null
           created_at?: string
           estado?: Database["public"]["Enums"]["estado_bank"]
           fecha_apertura?: string | null
           id?: string
+          legacy_code?: string | null
           linea_credito: number
           nombre: string
           numero_cuenta?: string | null
@@ -200,6 +217,7 @@ export type Database = {
           estado?: Database["public"]["Enums"]["estado_bank"]
           fecha_apertura?: string | null
           id?: string
+          legacy_code?: string | null
           linea_credito?: number
           nombre?: string
           numero_cuenta?: string | null
@@ -209,7 +227,15 @@ export type Database = {
           tipo_credito?: Database["public"]["Enums"]["tipo_credito"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "banks_contrato_file_fk"
+            columns: ["contrato_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       creditos: {
         Row: {
@@ -235,7 +261,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          legacy_code?: string | null
           contacto_email?: string | null
           contacto_nombre?: string | null
           contacto_telefono?: string | null
@@ -247,6 +272,7 @@ export type Database = {
           fecha_inicio: string
           google_drive_folder_url?: string | null
           id?: string
+          legacy_code?: string | null
           nombre_proyecto: string
           plazo_meses: number
           presupuesto: number
@@ -268,6 +294,7 @@ export type Database = {
           fecha_inicio?: string
           google_drive_folder_url?: string | null
           id?: string
+          legacy_code?: string | null
           nombre_proyecto?: string
           plazo_meses?: number
           presupuesto?: number
@@ -277,7 +304,22 @@ export type Database = {
           tasa_mora_multiplicador?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "creditos_contrato_file_fk"
+            columns: ["contrato_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creditos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fundings: {
         Row: {
@@ -346,7 +388,22 @@ export type Database = {
           proof_file_id?: string | null
           tipo?: Database["public"]["Enums"]["inversion_movimiento_tipo"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "inversion_movimientos_inversion_id_fkey"
+            columns: ["inversion_id"]
+            isOneToOne: false
+            referencedRelation: "inversiones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inversion_movimientos_proof_file_fk"
+            columns: ["proof_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inversiones: {
         Row: {
@@ -421,7 +478,22 @@ export type Database = {
           proof_file_id?: string | null
           tasa_anual?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "investor_tranches_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investor_tranches_proof_file_fk"
+            columns: ["proof_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investors: {
         Row: {
@@ -460,70 +532,15 @@ export type Database = {
           telefono?: string | null
           updated_at?: string
         }
-        Relationships: []
-      }
-      pending_payments: {
-        Row: {
-          id: string
-          destination_type: Database["public"]["Enums"]["destination_type"]
-          destination_id: string
-          monto_total: number
-          fecha_pago: string
-          notas: string | null
-          proof_storage_path: string
-          proof_file_name: string | null
-          proof_mime_type: string | null
-          proof_size_bytes: number | null
-          estado: Database["public"]["Enums"]["pending_payment_estado"]
-          submitted_by: string
-          submitted_at: string
-          reviewed_by: string | null
-          reviewed_at: string | null
-          rejection_reason: string | null
-          approved_payment_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          destination_type: Database["public"]["Enums"]["destination_type"]
-          destination_id: string
-          monto_total: number
-          fecha_pago: string
-          notas?: string | null
-          proof_storage_path: string
-          proof_file_name?: string | null
-          proof_mime_type?: string | null
-          proof_size_bytes?: number | null
-          estado?: Database["public"]["Enums"]["pending_payment_estado"]
-          submitted_by: string
-          submitted_at?: string
-          reviewed_by?: string | null
-          reviewed_at?: string | null
-          rejection_reason?: string | null
-          approved_payment_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          destination_type?: Database["public"]["Enums"]["destination_type"]
-          destination_id?: string
-          monto_total?: number
-          fecha_pago?: string
-          notas?: string | null
-          proof_storage_path?: string
-          proof_file_name?: string | null
-          proof_mime_type?: string | null
-          proof_size_bytes?: number | null
-          estado?: Database["public"]["Enums"]["pending_payment_estado"]
-          submitted_by?: string
-          submitted_at?: string
-          reviewed_by?: string | null
-          reviewed_at?: string | null
-          rejection_reason?: string | null
-          approved_payment_id?: string | null
-          created_at?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "investors_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_distributions: {
         Row: {
@@ -556,7 +573,15 @@ export type Database = {
           recipient_type?: Database["public"]["Enums"]["recipient_type"]
           tipo?: Database["public"]["Enums"]["tipo_distribucion"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payment_distributions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -604,7 +629,114 @@ export type Database = {
           notas?: string | null
           proof_file_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payments_amortization_schedule_id_fkey"
+            columns: ["amortization_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "amortization_schedule"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_proof_file_fk"
+            columns: ["proof_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_payments: {
+        Row: {
+          approved_payment_id: string | null
+          created_at: string
+          destination_id: string
+          destination_type: Database["public"]["Enums"]["destination_type"]
+          estado: Database["public"]["Enums"]["pending_payment_estado"]
+          fecha_pago: string
+          id: string
+          monto_total: number
+          notas: string | null
+          proof_file_name: string | null
+          proof_mime_type: string | null
+          proof_size_bytes: number | null
+          proof_storage_path: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          submitted_at: string
+          submitted_by: string
+        }
+        Insert: {
+          approved_payment_id?: string | null
+          created_at?: string
+          destination_id: string
+          destination_type: Database["public"]["Enums"]["destination_type"]
+          estado?: Database["public"]["Enums"]["pending_payment_estado"]
+          fecha_pago: string
+          id?: string
+          monto_total: number
+          notas?: string | null
+          proof_file_name?: string | null
+          proof_mime_type?: string | null
+          proof_size_bytes?: number | null
+          proof_storage_path: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          submitted_at?: string
+          submitted_by: string
+        }
+        Update: {
+          approved_payment_id?: string | null
+          created_at?: string
+          destination_id?: string
+          destination_type?: Database["public"]["Enums"]["destination_type"]
+          estado?: Database["public"]["Enums"]["pending_payment_estado"]
+          fecha_pago?: string
+          id?: string
+          monto_total?: number
+          notas?: string | null
+          proof_file_name?: string | null
+          proof_mime_type?: string | null
+          proof_size_bytes?: number | null
+          proof_storage_path?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          submitted_at?: string
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_payments_approved_payment_id_fkey"
+            columns: ["approved_payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_payments_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_payments_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prestamos: {
         Row: {
@@ -626,10 +758,10 @@ export type Database = {
           tasa_anual: number
           tasa_mora_multiplicador: number
           telefono: string | null
+          tipo: Database["public"]["Enums"]["prestamo_tipo"]
           updated_at: string
         }
         Insert: {
-          legacy_code?: string | null
           cantidad: number
           contrato_file_id?: string | null
           created_at?: string
@@ -640,6 +772,7 @@ export type Database = {
           fecha_inicio: string
           google_drive_folder_url?: string | null
           id?: string
+          legacy_code?: string | null
           nombre_persona: string
           plazo_meses: number
           profile_id?: string | null
@@ -647,6 +780,7 @@ export type Database = {
           tasa_anual: number
           tasa_mora_multiplicador?: number
           telefono?: string | null
+          tipo?: Database["public"]["Enums"]["prestamo_tipo"]
           updated_at?: string
         }
         Update: {
@@ -660,6 +794,7 @@ export type Database = {
           fecha_inicio?: string
           google_drive_folder_url?: string | null
           id?: string
+          legacy_code?: string | null
           nombre_persona?: string
           plazo_meses?: number
           profile_id?: string | null
@@ -667,9 +802,25 @@ export type Database = {
           tasa_anual?: number
           tasa_mora_multiplicador?: number
           telefono?: string | null
+          tipo?: Database["public"]["Enums"]["prestamo_tipo"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prestamos_contrato_file_fk"
+            columns: ["contrato_file_id"]
+            isOneToOne: false
+            referencedRelation: "proof_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestamos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -729,7 +880,15 @@ export type Database = {
           storage_path?: string
           uploaded_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "proof_files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reserva_movements: {
         Row: {
@@ -774,7 +933,22 @@ export type Database = {
           saldo_despues?: number
           tipo?: Database["public"]["Enums"]["reserva_tipo"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reserva_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserva_movements_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       settings: {
         Row: {
@@ -801,24 +975,17 @@ export type Database = {
         Relationships: []
       }
     }
-    Views: { [_ in never]: never }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      current_user_role: {
-        Args: never
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
-      is_admin: { Args: never; Returns: boolean }
-      mark_past_due: {
-        Args: never
-        Returns: { schedule_marked: number; destinations_flipped: number }[]
-      }
       approve_pending_payment: {
         Args: { p_pending_id: string }
         Returns: string
       }
-      reject_pending_payment: {
-        Args: { p_pending_id: string; p_reason: string }
-        Returns: string
+      current_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
       }
       investor_funded_destination: {
         Args: {
@@ -826,6 +993,14 @@ export type Database = {
           p_destination_type: Database["public"]["Enums"]["destination_type"]
         }
         Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
+      mark_past_due: {
+        Args: never
+        Returns: {
+          destinations_flipped: number
+          schedule_marked: number
+        }[]
       }
       record_payment: {
         Args: {
@@ -836,6 +1011,10 @@ export type Database = {
           p_notas: string | null
           p_proof_file_id: string
         }
+        Returns: string
+      }
+      reject_pending_payment: {
+        Args: { p_pending_id: string; p_reason: string }
         Returns: string
       }
     }
@@ -857,6 +1036,7 @@ export type Database = {
       estado_tranche: "activo" | "vencido" | "reembolsado"
       inversion_movimiento_tipo: "ingreso" | "gasto"
       pending_payment_estado: "pending" | "approved" | "rejected"
+      prestamo_tipo: "personal" | "negocio"
       recipient_type: "bank" | "investor_tranche" | "orion" | "reserva"
       reserva_tipo:
         | "aporte_auto"
@@ -868,6 +1048,163 @@ export type Database = {
       tipo_distribucion: "capital" | "interes"
       user_role: "admin" | "investor" | "debtor"
     }
-    CompositeTypes: { [_ in never]: never }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      amortizacion_estado: [
+        "pendiente",
+        "pagada_total",
+        "pagada_parcial",
+        "vencida",
+      ],
+      destination_type: ["inversion", "credito", "prestamo"],
+      estado_bank: ["activo", "completado", "cancelado"],
+      estado_destino: [
+        "pre_aprobado",
+        "activo",
+        "en_mora",
+        "completado",
+        "cancelado",
+      ],
+      estado_inversion: ["activo", "exitado", "cancelado"],
+      estado_tranche: ["activo", "vencido", "reembolsado"],
+      inversion_movimiento_tipo: ["ingreso", "gasto"],
+      pending_payment_estado: ["pending", "approved", "rejected"],
+      prestamo_tipo: ["personal", "negocio"],
+      recipient_type: ["bank", "investor_tranche", "orion", "reserva"],
+      reserva_tipo: [
+        "aporte_auto",
+        "aporte_manual",
+        "retiro_default",
+        "retiro_manual",
+      ],
+      source_type: ["investor_tranche", "bank_disposicion"],
+      tipo_credito: ["simple", "revolvente"],
+      tipo_distribucion: ["capital", "interes"],
+      user_role: ["admin", "investor", "debtor"],
+    },
+  },
+} as const

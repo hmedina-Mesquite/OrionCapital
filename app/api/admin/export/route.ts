@@ -122,11 +122,13 @@ export async function GET(req: NextRequest) {
       const { data } = await supabase
         .from("prestamos")
         .select(
-          "legacy_code, nombre_persona, rfc, cantidad, tasa_anual, plazo_meses, fecha_inicio, estado, email, telefono",
+          "legacy_code, tipo, nombre_persona, rfc, cantidad, tasa_anual, plazo_meses, fecha_inicio, estado, email, telefono",
         )
+        .order("tipo", { ascending: true })
         .order("nombre_persona", { ascending: true })
       rows = (data ?? []).map((r) => ({
         "Código legado": r.legacy_code,
+        Tipo: r.tipo === "negocio" ? "Negocio" : "Personal",
         Deudor: r.nombre_persona,
         RFC: r.rfc,
         "Monto (MXN)": Number(r.cantidad),
