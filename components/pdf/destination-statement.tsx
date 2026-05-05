@@ -112,6 +112,9 @@ export type DestinationStatementProps = {
     cuota: number
     saldo: number
     estado: string
+    /** Remaining unpaid balance for this specific cuota.
+     *  Only meaningful when estado === 'pagada_parcial' or 'vencida'. */
+    saldoCuota: number
   }[]
   payments: {
     fecha: string
@@ -138,6 +141,17 @@ const ESTADO_LABEL: Record<string, string> = {
   pagada_total: "Pagada",
   pagada_parcial: "Parcial",
   vencida: "Vencida",
+}
+
+/** "Pagada", "Vencida", "Pendiente", or "Parcial · $X" with the real saldo. */
+function estadoText(
+  estado: string,
+  saldoCuota: number,
+): string {
+  if (estado === "pagada_parcial") {
+    return `Parcial · ${fmt(saldoCuota)}`
+  }
+  return ESTADO_LABEL[estado] ?? estado
 }
 
 export function DestinationStatement(props: DestinationStatementProps) {
@@ -342,7 +356,7 @@ export function DestinationStatement(props: DestinationStatementProps) {
                 <Text style={styles.cronNum}>{fmt(r.cuota)}</Text>
                 <Text style={styles.cronNum}>{fmt(r.saldo)}</Text>
                 <Text style={styles.estado}>
-                  {ESTADO_LABEL[r.estado] ?? r.estado}
+                  {estadoText(r.estado, r.saldoCuota)}
                 </Text>
               </View>
             ))}

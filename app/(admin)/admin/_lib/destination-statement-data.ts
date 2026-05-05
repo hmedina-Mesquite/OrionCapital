@@ -1,6 +1,7 @@
 import "server-only"
 import { createClient } from "@/lib/supabase/server"
 import { formatDate, todayISO } from "@/lib/dates"
+import { round2 } from "@/lib/money"
 import type { DestinationStatementProps } from "@/components/pdf/destination-statement"
 
 /**
@@ -90,11 +91,12 @@ export async function loadDestinationStatement(
     .eq("destination_id", id)
     .order("numero_cuota", { ascending: true })
 
-  // Payments.
+  // Payments — pull amortization_schedule_id so we can attribute each payment
+  // back to the cuota it touched first (the RPC sets that on insert).
   const { data: payments } = await supabase
     .from("payments")
     .select(
-      "fecha_pago, monto_capital, monto_interes, monto_mora, monto_total",
+      "fecha_pago, monto_capital, monto_interes, monto_mora, monto_total, amortization_schedule_id",
     )
     .eq("destination_type", kind)
     .eq("destination_id", id)
@@ -110,18 +112,79 @@ export async function loadDestinationStatement(
   )
   const saldoActual = Math.max(0, monto - totalCapPaid)
 
-  // Aging — count of overdue cuotas + sum of their cuota_esperada.
-  // We trust the schedule.estado from the DB (set atomically by record_payment
-  // RPC and the nightly mark_past_due cron). Don't second-guess it here.
-  const vencidas = (schedule ?? []).filter(
-    (r) =>
-      r.estado !== "pagada_total" &&
-      r.fecha_vencimiento < today,
+  // Per-cuota paid totals: sum payments grouped by amortization_schedule_id.
+  // The RPC `record_payment` writes the FIRST cuota a payment touched into
+  // payments.amortization_schedule_id. Approximation works for the common
+  // case (one payment ↔ one cuota). When a payment spans multiple cuotas,
+  // the schedule.estado='pagada_total' on the overflow rows is our backstop.
+  const paidByCuota = new Map<string, number>()
+  for (const p of payments ?? []) {
+    if (!p.amortization_schedule_id) continue
+    paidByCuota.set(
+      p.amortization_schedule_id,
+      (paidByCuota.get(p.amortization_schedule_id) ?? 0) +
+        Number(p.monto_total),
+    )
+  }
+
+  type EnrichedRow = {
+    id: string
+    numero_cuota: number
+    fecha_vencimiento: string
+    cuota_esperada: number
+    interes_esperado: number
+    capital_esperado: number
+    saldo_restante: number
+    db_estado: string
+    paid_total: number
+    saldo_cuota: number
+    display_estado: "pagada_total" | "pagada_parcial" | "vencida" | "pendiente"
+  }
+
+  const enrichedSchedule: EnrichedRow[] = (schedule ?? []).map((r) => {
+    const cuotaEsperada = Number(r.cuota_esperada)
+    // Trust DB when it says fully paid. Otherwise approximate via the proxy,
+    // capped at cuota_esperada so overflow doesn't double-count.
+    const paidTotal =
+      r.estado === "pagada_total"
+        ? cuotaEsperada
+        : Math.min(paidByCuota.get(r.id) ?? 0, cuotaEsperada)
+    const saldoCuota = round2(cuotaEsperada - paidTotal)
+
+    let display: EnrichedRow["display_estado"]
+    if (saldoCuota <= 0.01) {
+      display = "pagada_total"
+    } else if (paidTotal > 0) {
+      display = "pagada_parcial"
+    } else if (r.fecha_vencimiento < today) {
+      display = "vencida"
+    } else {
+      display = "pendiente"
+    }
+
+    return {
+      id: r.id,
+      numero_cuota: r.numero_cuota,
+      fecha_vencimiento: r.fecha_vencimiento,
+      cuota_esperada: cuotaEsperada,
+      interes_esperado: Number(r.interes_esperado),
+      capital_esperado: Number(r.capital_esperado),
+      saldo_restante: Number(r.saldo_restante),
+      db_estado: r.estado,
+      paid_total: paidTotal,
+      saldo_cuota: saldoCuota,
+      display_estado: display,
+    }
+  })
+
+  // Vencidas (alert/KPI) = strictly cuotas with NOTHING paid past their due
+  // date. Cuotas with partial payments past due show up in the cronograma
+  // as "Parcial · saldo $X" but don't trigger the red banner — that matches
+  // Opción B literally: una cuota "vencida" es la que no se ha pagado.
+  const vencidas = enrichedSchedule.filter(
+    (r) => r.display_estado === "vencida",
   )
-  const vencidasTotal = vencidas.reduce(
-    (s, r) => s + Number(r.cuota_esperada),
-    0,
-  )
+  const vencidasTotal = vencidas.reduce((s, r) => s + r.saldo_cuota, 0)
 
   // Fundings.
   const { data: fundings } = await supabase
@@ -196,14 +259,15 @@ export async function loadDestinationStatement(
       monto: Number(f.monto),
       fecha: formatDate(f.fecha),
     })),
-    schedule: (schedule ?? []).map((r) => ({
+    schedule: enrichedSchedule.map((r) => ({
       numero: r.numero_cuota,
       fecha: formatDate(r.fecha_vencimiento),
-      capital: Number(r.capital_esperado),
-      interes: Number(r.interes_esperado),
-      cuota: Number(r.cuota_esperada),
-      saldo: Number(r.saldo_restante),
-      estado: r.estado,
+      capital: r.capital_esperado,
+      interes: r.interes_esperado,
+      cuota: r.cuota_esperada,
+      saldo: r.saldo_restante,
+      estado: r.display_estado,
+      saldoCuota: r.saldo_cuota,
     })),
     payments: (payments ?? []).map((p) => ({
       fecha: formatDate(p.fecha_pago),
